@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: resource-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/resource_db
+    username: resource_user
+    password: resource_pass
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8081
+song:
+  service:
+    url: http://localhost:8082
