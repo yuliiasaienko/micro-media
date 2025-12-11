@@ -1,5 +1,10 @@
 package com.july.songservice.service;
 
+import static java.util.Objects.isNull;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import com.july.songservice.dto.DeleteResponseDto;
 import com.july.songservice.dto.SongIdResponseDto;
 import com.july.songservice.dto.SongRequestDto;
@@ -13,6 +18,7 @@ import com.july.songservice.repository.SongRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,11 +52,11 @@ public class SongService {
     @Transactional
     public DeleteResponseDto deleteByIds(String idsCsv) {
         List<Long> ids = parseIds(idsCsv);
-        if (ids.isEmpty()) {
+        if (isEmpty(ids)) {
             return new DeleteResponseDto(List.of());
         }
         List<SongEntity> foundEntities = repository.findAllById(ids);
-        if (!foundEntities.isEmpty()) {
+        if (isNotEmpty(foundEntities)) {
             repository.deleteAll(foundEntities);
         }
         List<Long> deleted = foundEntities.stream()
@@ -61,14 +67,16 @@ public class SongService {
     }
 
     private void validateId(Long id) {
-        if (id == null || id <= 0) {
-            String value = id == null ? "null" : id.toString();
-            throw new BadRequestException("Invalid value '" + value + "' for ID. Must be a positive integer");
+        if (isNull(id)) {
+            throw new BadRequestException("Invalid value 'null' for ID. Must be a positive integer");
+        }
+        if (id <= 0) {
+            throw new BadRequestException("Invalid value '" + id + "' for ID. Must be a positive integer");
         }
     }
 
     private List<Long> parseIds(String idsCsv) {
-        if (idsCsv == null || idsCsv.isBlank()) {
+        if (isBlank(idsCsv)) {
             throw new BadRequestException("Id list must not be empty");
         }
         if (idsCsv.length() > MAX_CSV_LENGTH) {
@@ -82,7 +90,7 @@ public class SongService {
             if (trimmed.isEmpty() || !trimmed.matches("^\\d+$")) {
                 throw new BadRequestException("Invalid ID format: '" + trimmed + "'. Only positive integers are allowed");
             }
-            Long id = Long.parseLong(trimmed);
+            long id = Long.parseLong(trimmed);
             if (id <= 0) {
                 throw new BadRequestException("Invalid value '" + id + "' for ID. Must be a positive integer");
             }

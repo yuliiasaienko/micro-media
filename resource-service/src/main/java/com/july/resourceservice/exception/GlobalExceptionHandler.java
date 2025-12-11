@@ -15,6 +15,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final String NULL = "null";
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiErrorResponse> handleBadRequest(BadRequestException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
@@ -69,12 +71,12 @@ public class GlobalExceptionHandler {
     private String extractProvidedValue(Exception ex) {
         if (ex instanceof MethodArgumentTypeMismatchException mismatch) {
             Object value = mismatch.getValue();
-            return value != null ? value.toString() : "null";
+            return value != null ? value.toString() : NULL;
         }
         if (ex instanceof ConversionFailedException conversion) {
             Object value = conversion.getValue();
-            return value != null ? value.toString() : "null";
+            return value != null ? value.toString() : NULL;
         }
-        return "null";
+        return NULL;
     }
 }

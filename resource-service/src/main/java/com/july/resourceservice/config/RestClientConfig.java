@@ -17,7 +17,6 @@ public class RestClientConfig {
 
     @Bean
     public RestClient.Builder restClientBuilder() {
-        // Explicitly expose a builder because Spring Boot 4 no longer auto-registers it by default
         return RestClient.builder();
     }
 }

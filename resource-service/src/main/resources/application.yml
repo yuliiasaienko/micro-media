@@ -17,3 +17,4 @@ server:
 song:
   service:
     url: http://localhost:8082
+    path: /songs

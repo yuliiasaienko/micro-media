@@ -1,5 +1,10 @@
 package com.july.resourceservice.service;
 
+import static java.util.Objects.isNull;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import com.july.resourceservice.client.SongServiceClient;
 import com.july.resourceservice.dto.DeleteResponseDto;
 import com.july.resourceservice.dto.ResourceResponseDto;
@@ -12,6 +17,7 @@ import com.july.resourceservice.repository.ResourceRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,11 +64,11 @@ public class ResourceService {
     @Transactional
     public DeleteResponseDto delete(String idsCsv) {
         List<Long> ids = parseIds(idsCsv);
-        if (ids.isEmpty()) {
+        if (isEmpty(ids)) {
             return new DeleteResponseDto(List.of());
         }
         List<ResourceEntity> found = repository.findAllById(ids);
-        if (!found.isEmpty()) {
+        if (isNotEmpty(found)) {
             repository.deleteAll(found);
             List<Long> deletedIds = found.stream().map(ResourceEntity::getId).toList();
             // Cascade delete song metadata for removed resources
@@ -73,7 +79,7 @@ public class ResourceService {
     }
 
     private List<Long> parseIds(String idsCsv) {
-        if (idsCsv == null || idsCsv.isBlank()) {
+        if (isNull(idsCsv) || isBlank(idsCsv)) {
             throw new BadRequestException("Id list must not be empty");
         }
         if (idsCsv.length() > MAX_CSV_LENGTH) {
@@ -88,7 +94,7 @@ public class ResourceService {
             if (trimmed.isEmpty() || !trimmed.matches("^\\d+$")) {
                 throw new BadRequestException("Invalid ID format: '" + trimmed + "'. Only positive integers are allowed");
             }
-            Long id = Long.parseLong(trimmed);
+            long id = Long.parseLong(trimmed);
             if (id <= 0) {
                 throw new BadRequestException("Invalid value '" + id + "' for ID. Must be a positive integer");
             }
@@ -98,9 +104,11 @@ public class ResourceService {
     }
 
     private void validateId(Long id) {
-        if (id == null || id <= 0) {
-            String value = id == null ? "null" : id.toString();
-            throw new BadRequestException("Invalid value '" + value + "' for ID. Must be a positive integer");
+        if (isNull(id)) {
+            throw new BadRequestException("Invalid value 'null' for ID. Must be a positive integer");
+        }
+        if (id <= 0) {
+            throw new BadRequestException("Invalid value '" + id + "' for ID. Must be a positive integer");
         }
     }
 }

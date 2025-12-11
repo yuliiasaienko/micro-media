@@ -1,6 +1,7 @@
 package com.july.songservice.controller;
 
 import com.july.songservice.dto.DeleteResponseDto;
+import com.july.songservice.dto.SongIdResponseDto;
 import com.july.songservice.dto.SongRequestDto;
 import com.july.songservice.dto.SongResponseDto;
 import com.july.songservice.service.SongService;
@@ -24,8 +25,8 @@ public class SongController {
     private final SongService songService;
 
     @PostMapping
-    public ResponseEntity<com.july.songservice.dto.SongIdResponseDto> create(@Valid @RequestBody SongRequestDto requestDto) {
-        com.july.songservice.dto.SongIdResponseDto created = songService.create(requestDto);
+    public ResponseEntity<SongIdResponseDto> create(@Valid @RequestBody SongRequestDto requestDto) {
+        SongIdResponseDto created = songService.create(requestDto);
         return ResponseEntity.ok(created);
     }
 

@@ -1,10 +1,12 @@
 package com.july.resourceservice.client;
 
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+
 import com.july.resourceservice.dto.SongMetadataRequest;
 import com.july.resourceservice.exception.ExternalServiceException;
 import java.util.List;
 import java.util.StringJoiner;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -12,15 +14,21 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 @Component
-@RequiredArgsConstructor
 public class SongServiceClient {
 
     private final RestClient songServiceRestClient;
+    private final String songsPath;
+
+    public SongServiceClient(RestClient songServiceRestClient,
+                             @Value("${song.service.path:/songs}") String songsPath) {
+        this.songServiceRestClient = songServiceRestClient;
+        this.songsPath = songsPath;
+    }
 
     public void createMetadata(SongMetadataRequest request) {
         try {
             songServiceRestClient.post()
-                    .uri("/songs")
+                    .uri(songsPath)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(request)
                     .retrieve()
@@ -33,14 +41,14 @@ public class SongServiceClient {
     }
 
     public void deleteMetadata(List<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
+        if (isEmpty(ids)) {
             return;
         }
         StringJoiner joiner = new StringJoiner(",");
         ids.forEach(id -> joiner.add(String.valueOf(id)));
         try {
             songServiceRestClient.delete()
-                    .uri(uriBuilder -> uriBuilder.path("/songs")
+                    .uri(uriBuilder -> uriBuilder.path(songsPath)
                             .queryParam("id", joiner.toString())
                             .build())
                     .retrieve()
