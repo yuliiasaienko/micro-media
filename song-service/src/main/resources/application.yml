@@ -2,15 +2,15 @@ spring:
   application:
     name: song-service
   datasource:
-    url: jdbc:postgresql://localhost:5434/song_db
-    username: song_user
-    password: song_pass
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5434/song_db}
+    username: ${SPRING_DATASOURCE_USERNAME:song_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:song_pass}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-  port: 8082
+  port: ${SERVER_PORT:8082}

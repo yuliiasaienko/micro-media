@@ -1,20 +1,53 @@
 services:
   resource-db:
-    image: postgres:16
-    container_name: resource-db
+    image: postgres:17-alpine
     environment:
-      POSTGRES_DB: resource_db
-      POSTGRES_USER: resource_user
-      POSTGRES_PASSWORD: resource_pass
+      POSTGRES_DB: ${RESOURCE_DB_NAME}
+      POSTGRES_USER: ${RESOURCE_DB_USER}
+      POSTGRES_PASSWORD: ${RESOURCE_DB_PASSWORD}
+    volumes:
+      - ./init-scripts/resource-db:/docker-entrypoint-initdb.d:ro
     ports:
-      - "5433:5432"
+      - "${RESOURCE_DB_PORT:-5433}:5432"
 
   song-db:
-    image: postgres:16
-    container_name: song-db
+    image: postgres:17-alpine
     environment:
-      POSTGRES_DB: song_db
-      POSTGRES_USER: song_user
-      POSTGRES_PASSWORD: song_pass
+      POSTGRES_DB: ${SONG_DB_NAME}
+      POSTGRES_USER: ${SONG_DB_USER}
+      POSTGRES_PASSWORD: ${SONG_DB_PASSWORD}
+    volumes:
+      - ./init-scripts/song-db:/docker-entrypoint-initdb.d:ro
     ports:
-      - "5434:5432"
+      - "${SONG_DB_PORT:-5434}:5432"
+
+  song-service:
+    build:
+      context: ./song-service
+      dockerfile: Dockerfile
+    depends_on:
+      - song-db
+    environment:
+      SPRING_DATASOURCE_URL: ${SONG_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
+      SERVER_PORT: ${SONG_SERVICE_PORT}
+    ports:
+      - "${SONG_SERVICE_PORT:-8082}:${SONG_SERVICE_PORT:-8082}"
+
+  resource-service:
+    build:
+      context: ./resource-service
+      dockerfile: Dockerfile
+    depends_on:
+      - resource-db
+      - song-service
+    environment:
+      SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
+      SONG_SERVICE_URL: ${SONG_SERVICE_URL}
+      SONG_SERVICE_PATH: ${SONG_SERVICE_PATH}
+      SERVER_PORT: ${RESOURCE_SERVICE_PORT}
+    ports:
+      - "${RESOURCE_SERVICE_PORT:-8081}:${RESOURCE_SERVICE_PORT:-8081}"

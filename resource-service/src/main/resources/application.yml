@@ -2,19 +2,19 @@ spring:
   application:
     name: resource-service
   datasource:
-    url: jdbc:postgresql://localhost:5433/resource_db
-    username: resource_user
-    password: resource_pass
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/resource_db}
+    username: ${SPRING_DATASOURCE_USERNAME:resource_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:resource_pass}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-  port: 8081
+  port: ${SERVER_PORT:8081}
 song:
   service:
-    url: http://localhost:8082
-    path: /songs
+    url: ${SONG_SERVICE_URL:http://localhost:8082}
+    path: ${SONG_SERVICE_PATH:/songs}
