@@ -21,25 +21,38 @@ services:
     ports:
       - "${SONG_DB_PORT:-5434}:5432"
 
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    environment:
+      SERVER_PORT: ${EUREKA_SERVER_PORT:-8761}
+    ports:
+      - "${EUREKA_SERVER_PORT:-8761}:8761"
+
   song-service:
     build:
       context: ./song-service
       dockerfile: Dockerfile
     depends_on:
+      - eureka-server
       - song-db
     environment:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
       SERVER_PORT: ${SONG_SERVICE_PORT}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:-http://eureka-server:8761/eureka}
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:-true}
     ports:
-      - "${SONG_SERVICE_PORT:-8082}:${SONG_SERVICE_PORT:-8082}"
+      - "8082-8083:8082"
 
   resource-service:
     build:
       context: ./resource-service
       dockerfile: Dockerfile
     depends_on:
+      - eureka-server
       - resource-db
       - song-service
     environment:
@@ -49,5 +62,7 @@ services:
       SONG_SERVICE_URL: ${SONG_SERVICE_URL}
       SONG_SERVICE_PATH: ${SONG_SERVICE_PATH}
       SERVER_PORT: ${RESOURCE_SERVICE_PORT}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:-http://eureka-server:8761/eureka}
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:-true}
     ports:
       - "${RESOURCE_SERVICE_PORT:-8081}:${RESOURCE_SERVICE_PORT:-8081}"
