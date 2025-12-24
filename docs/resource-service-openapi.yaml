@@ -1,0 +1,95 @@
+openapi: 3.0.3
+info:
+  title: Resource Service API
+  version: "0.0.1"
+  description: |
+    Stores MP3 binaries and coordinates metadata persistence in the Song Service.
+servers:
+  - url: http://localhost:8081
+paths:
+  /resources:
+    post:
+      summary: Upload MP3 resource
+      description: Validates MP3 content and forwards extracted tags to Song Service.
+      requestBody:
+        required: true
+        content:
+          audio/mpeg:
+            schema:
+              type: string
+              format: binary
+            example: (binary MP3 content)
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: Stored resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceResponseDto'
+              example:
+                id: 1
+        "400":
+          description: Invalid file or missing tags
+        "500":
+          description: Failed to save metadata in Song Service
+    delete:
+      summary: Delete resources by ids (also deletes metadata via Song Service)
+      parameters:
+        - in: query
+          name: id
+          required: true
+          description: Comma-separated list of resource ids to delete
+          schema:
+            type: string
+            example: 1,2,3
+      responses:
+        "200":
+          description: Deleted resource ids
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponseDto'
+              example:
+                ids: [1, 2]
+  /resources/{id}:
+    get:
+      summary: Download stored MP3
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: MP3 content
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+components:
+  schemas:
+    ResourceResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+      required: [id]
+    DeleteResponseDto:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+      required: [ids]

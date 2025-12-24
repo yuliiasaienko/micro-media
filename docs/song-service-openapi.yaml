@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: Song Service API
+  version: "0.0.1"
+  description: |
+    Manages song metadata extracted from uploaded MP3 files.
+servers:
+  - url: http://localhost:8082
+paths:
+  /songs:
+    post:
+      summary: Create song metadata
+      description: Persists metadata for a resource id. Fails with 409 if the id already exists.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SongRequestDto'
+            example:
+              id: 1
+              name: We are the champions
+              artist: Queen
+              album: News of the world
+              duration: "02:59"
+              year: "1977"
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SongIdResponseDto'
+              example:
+                id: 1
+        "400":
+          description: Validation failed
+        "409":
+          description: Metadata already exists for the given id
+    delete:
+      summary: Delete song metadata by ids
+      parameters:
+        - in: query
+          name: id
+          required: true
+          description: Comma-separated list of ids to delete
+          schema:
+            type: string
+            example: 1,2,3
+      responses:
+        "200":
+          description: Deleted records (only ids actually removed are returned)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponseDto'
+              example:
+                ids: [1, 2, 3]
+  /songs/{id}:
+    get:
+      summary: Get song metadata
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Resource id
+      responses:
+        "200":
+          description: Song metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SongResponseDto'
+              example:
+                id: 1
+                name: We are the champions
+                artist: Queen
+                album: News of the world
+                duration: "02:59"
+                year: "1977"
+        "404":
+          description: Not found
+components:
+  schemas:
+    SongRequestDto:
+      type: object
+      required: [id, name, artist, album, duration, year]
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        artist:
+          type: string
+          minLength: 1
+          maxLength: 100
+        album:
+          type: string
+          minLength: 1
+          maxLength: 100
+        duration:
+          type: string
+          pattern: "^[0-9]{2}:[0-5][0-9]$"
+          example: "02:59"
+        year:
+          type: string
+          pattern: "^(19\\d{2}|20\\d{2})$"
+          example: "1977"
+    SongResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/SongRequestDto'
+    SongIdResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+      required: [id]
+    DeleteResponseDto:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+      required: [ids]

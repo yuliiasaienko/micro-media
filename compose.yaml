@@ -1,6 +1,7 @@
 services:
   resource-db:
     image: postgres:17-alpine
+    platform: linux/arm64/v8
     environment:
       POSTGRES_DB: ${RESOURCE_DB_NAME}
       POSTGRES_USER: ${RESOURCE_DB_USER}
@@ -12,6 +13,7 @@ services:
 
   song-db:
     image: postgres:17-alpine
+    platform: linux/arm64/v8
     environment:
       POSTGRES_DB: ${SONG_DB_NAME}
       POSTGRES_USER: ${SONG_DB_USER}
@@ -25,6 +27,7 @@ services:
     build:
       context: ./eureka-server
       dockerfile: Dockerfile
+    platform: linux/arm64/v8
     environment:
       SERVER_PORT: ${EUREKA_SERVER_PORT:-8761}
     ports:
@@ -34,6 +37,7 @@ services:
     build:
       context: ./song-service
       dockerfile: Dockerfile
+    platform: linux/arm64/v8
     depends_on:
       - eureka-server
       - song-db
@@ -51,6 +55,7 @@ services:
     build:
       context: ./resource-service
       dockerfile: Dockerfile
+    platform: linux/arm64/v8
     depends_on:
       - eureka-server
       - resource-db
